@@ -17,7 +17,7 @@ import androidx.navigation.NavHostController
 import com.pbs.tv.Route
 import com.pbs.tv.model.EpisodePart
 import com.pbs.tv.model.EpisodeViewModel
-import com.pbs.tv.util.SERVER_URL
+import com.pbs.tv.util.Http
 import com.pbs.tv.util.encodeUriComponent
 import org.json.JSONArray
 
@@ -50,7 +50,7 @@ fun EpisodeScreen(
   }
 
   PreviewPanel(
-    title = episode, previewUrl = SERVER_URL + icon, navController = navController
+    title = episode, previewUrl = Http.serverUrl + icon, navController = navController
   ) {
     when (state) {
       EpisodeViewModel.EpisodeState.Loading -> Loader(message = title)
@@ -80,7 +80,7 @@ fun EpisodePlayer(params: Map<String, String>, navController: NavHostController)
   val idx = remember { params["index"]!!.toInt() }
   val videoUrl = remember { params["parts"]!!.decodeUrls() }
 
-  VideoPlayer(videoUrl = SERVER_URL + videoUrl[idx]) {
+  VideoPlayer(videoUrl = Http.serverUrl + videoUrl[idx]) {
     navController.popBackStack()
     if (idx + 1 < videoUrl.size) {
       navController.navigate(

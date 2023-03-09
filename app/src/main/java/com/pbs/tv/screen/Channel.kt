@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,10 @@ fun Channel(
   val title = params["title"] ?: ""
   val tvShowsState = model.getTvShows(title).collectAsState(initial = null)
   val tvShows = tvShowsState.value
+
+  LaunchedEffect(key1 = Unit) {
+    model.loadHome()
+  }
 
   Scaffold(topBar = {
     AppBar(

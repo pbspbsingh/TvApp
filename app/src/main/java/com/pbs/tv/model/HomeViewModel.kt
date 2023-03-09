@@ -1,10 +1,10 @@
 package com.pbs.tv.model
 
+import android.app.Application
 import android.util.Log
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.pbs.tv.util.HTTP_CLIENT
-import com.pbs.tv.util.SERVER_URL
+import com.pbs.tv.util.Http
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
@@ -18,21 +18,25 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
   private val _state: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.Loading)
 
   val state: StateFlow<HomeState> = _state.asStateFlow()
 
-  init {
-    viewModelScope.launch { loadHome() }
+  fun init(mode: BackendMode) {
+    val context = getApplication<Application>().applicationContext
+    viewModelScope.launch {
+      Http.init(context, mode)
+      loadHome()
+    }
   }
 
-  private suspend fun loadHome() {
+  suspend fun loadHome() {
     try {
       withContext(Dispatchers.IO) {
         Log.d(TAG, "Loading Channels info...")
-        val response = HTTP_CLIENT.get("$SERVER_URL/home")
+        val response = Http { get("$it/home") }
         Log.i(TAG, "Got http response: ${response.status}")
         if (!response.status.isSuccess()) {
           throw IllegalStateException("Status: ${response.status}, Error: ${response.bodyAsText()}")
@@ -63,12 +67,11 @@ class HomeViewModel : ViewModel() {
     return map
   }
 
-  fun getTvShows(tvChannel: String): Flow<List<TvShow>?> =
-    state.map { homeState ->
-      (homeState as? HomeState.ChannelsInfo)?.let { chanInfo ->
-        chanInfo.channels[tvChannel]
-      }
+  fun getTvShows(tvChannel: String): Flow<List<TvShow>?> = state.map { homeState ->
+    (homeState as? HomeState.ChannelsInfo)?.let { chanInfo ->
+      chanInfo.channels[tvChannel]
     }
+  }
 
   private companion object {
     const val TAG = "HomeViewModel"
@@ -78,5 +81,10 @@ class HomeViewModel : ViewModel() {
     object Loading : HomeState
     data class LoadError(val message: String? = null) : HomeState
     data class ChannelsInfo(val channels: Map<String, List<TvShow>>) : HomeState
+  }
+
+  enum class BackendMode {
+    Remote, Local, LocalWithVpn,
+    ;
   }
 }

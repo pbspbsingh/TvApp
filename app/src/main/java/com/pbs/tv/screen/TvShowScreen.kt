@@ -22,7 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.pbs.tv.Route
 import com.pbs.tv.model.TvShowViewModel
-import com.pbs.tv.util.SERVER_URL
+import com.pbs.tv.util.Http
 import com.pbs.tv.util.encodeUriComponent
 import kotlinx.coroutines.launch
 
@@ -49,7 +49,7 @@ fun TvShowScreen(
 
   PreviewPanel(
     title = "$title (${episodes.episodes.size}${if (episodes.hasMore) "+" else ""})",
-    previewUrl = SERVER_URL + icon,
+    previewUrl = Http.serverUrl + icon,
     navController = navController
   ) { isWideScreen ->
     LazyColumn {

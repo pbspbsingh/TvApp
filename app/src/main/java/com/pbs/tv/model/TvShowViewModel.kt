@@ -2,8 +2,7 @@ package com.pbs.tv.model
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.pbs.tv.util.HTTP_CLIENT
-import com.pbs.tv.util.SERVER_URL
+import com.pbs.tv.util.Http
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.encodeURLPathPart
@@ -31,15 +30,15 @@ class TvShowViewModel : ViewModel() {
 
   suspend fun loadEpisodes(channel: String, tvshow: String, loadMore: Boolean = false) {
     if (!_episodes.value.hasMore) {
-      Log.w(TAG, "There is no more Episodes, NOOP")
+      Log.w(TAG, "There is no more Episodes, NOP")
     }
     try {
       withContext(Dispatchers.IO) {
         _loading.value = true
         val url =
-          "$SERVER_URL/episodes/${channel.encodeURLPathPart()}/${tvshow.encodeURLPathPart()}?load_more=$loadMore"
+          "episodes/${channel.encodeURLPathPart()}/${tvshow.encodeURLPathPart()}?load_more=$loadMore"
         Log.i(TAG, "Get $url")
-        val response = HTTP_CLIENT.get(url)
+        val response = Http { get("$it/$url") }
         Log.i(TAG, "Got http response: ${response.status}")
         if (!response.status.isSuccess()) {
           throw IllegalStateException("Status: ${response.status}, Error: ${response.bodyAsText()}")
