@@ -1,7 +1,6 @@
 package com.pbs.tv.screen
 
 import android.util.Log
-import android.view.KeyEvent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -39,14 +38,16 @@ fun VideoPlayer(videoUrl: String, modifier: Modifier = Modifier, onEnded: () -> 
 
       addListener(object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
-          when(playbackState) {
+          when (playbackState) {
             Player.STATE_ENDED -> {
               Log.i(TAG, "Current video has ended")
               onEnded()
             }
+
             Player.STATE_READY -> {
               playerView.get()?.showController()
             }
+
             else -> {}
           }
         }
@@ -59,7 +60,9 @@ fun VideoPlayer(videoUrl: String, modifier: Modifier = Modifier, onEnded: () -> 
       .fillMaxSize()
       .focusTarget()
       .onKeyEvent {
-        playerView.get()?.showController()
+        playerView
+          .get()
+          ?.showController()
         false
       },
     color = Color.DarkGray,
