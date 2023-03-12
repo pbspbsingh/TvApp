@@ -24,16 +24,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
   val state: StateFlow<HomeState> = _state.asStateFlow()
 
-  fun init(mode: BackendMode) {
+  init {
+    viewModelScope.launch { init() }
+  }
+
+  private suspend fun init() {
     val context = getApplication<Application>().applicationContext
-    viewModelScope.launch {
-      Http.init(context, mode)
-      loadHome()
-    }
+    Http.init(context, BACKEND_MODE)
   }
 
   suspend fun loadHome() {
     try {
+      init()
       withContext(Dispatchers.IO) {
         Log.d(TAG, "Loading Channels info...")
         val response = Http { get("$it/home") }
@@ -73,8 +75,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
   }
 
-  private companion object {
-    const val TAG = "HomeViewModel"
+  companion object {
+    private const val TAG = "HomeViewModel"
+    val BACKEND_MODE = BackendMode.LocalWithVpn // Use Remote for development
   }
 
   sealed interface HomeState {
@@ -84,7 +87,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
   }
 
   enum class BackendMode {
-    Remote, Local, LocalWithVpn,
-    ;
+    Remote, Local, LocalWithVpn;
+
+    fun isLocal() = this == Local || this == LocalWithVpn
   }
 }

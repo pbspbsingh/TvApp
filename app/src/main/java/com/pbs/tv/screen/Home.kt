@@ -17,20 +17,19 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.pbs.server.vpn.prepareVpnConsentIntent
+import com.pbs.server.vpn.VpnUtil
 import com.pbs.tv.Route
 import com.pbs.tv.model.HomeViewModel
-import com.pbs.tv.model.HomeViewModel.BackendMode
 import com.pbs.tv.model.TvShow
+import kotlinx.coroutines.launch
 
 private const val TAG = "HomeScreen"
-
-private val BACKEND_MODE = BackendMode.LocalWithVpn // Use Remote for development
 
 @Composable
 fun Home(
@@ -38,28 +37,43 @@ fun Home(
   model: HomeViewModel = viewModel(),
 ) {
   val context = LocalContext.current
+  val scope = rememberCoroutineScope()
   val activityLauncher =
     rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
-      val mode =
-        if (it.resultCode == Activity.RESULT_OK) BackendMode.LocalWithVpn else BackendMode.Local
-      Log.i(TAG, "Got result back from activity: $it, so using mode: $mode")
-      model.init(mode)
+      scope.launch {
+        if (it.resultCode == Activity.RESULT_OK) {
+          Log.i(TAG, "Let's connect the VPN")
+          VpnUtil.connect()
+        } else {
+          Log.w(TAG, "User denied VPN consent, will try next time")
+          VpnUtil.denyConsent()
+        }
+        model.loadHome()
+      }
     }
 
   LaunchedEffect(Unit) {
-    if (BACKEND_MODE == BackendMode.LocalWithVpn) {
-      Log.i(TAG, "Preparing VPN consent screen")
-      val intent = context.applicationContext.prepareVpnConsentIntent()
-      if (intent != null) {
-        Log.i(TAG, "Launching VPN consent screen")
-        activityLauncher.launch(intent)
-      } else {
-        Log.i(TAG, "Already consented, using mode ${BackendMode.LocalWithVpn}")
-        model.init(BackendMode.LocalWithVpn)
+    if (HomeViewModel.BACKEND_MODE == HomeViewModel.BackendMode.LocalWithVpn) {
+      Log.d(TAG, "Preparing VPN consent screen")
+      when (val vpnState = VpnUtil.prepare(context)) {
+        VpnUtil.VpnState.AlreadyConsented -> {
+          Log.i(TAG, "VPN is consented, let's connect to it")
+          VpnUtil.connect()
+          model.loadHome()
+        }
+
+        is VpnUtil.VpnState.ConsentNeeded -> {
+          Log.i(TAG, "Consent is required for VPN")
+          activityLauncher.launch(vpnState.intent)
+        }
+
+        else -> {
+          Log.i(TAG, "VPN State: $vpnState")
+          model.loadHome()
+        }
       }
     } else {
-      Log.i(TAG, "Looks like it's DEV mode, using remote mode")
-      model.init(BackendMode.Remote)
+      model.loadHome()
     }
   }
 

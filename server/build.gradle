@@ -32,23 +32,27 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
+    buildFeatures {
+        aidl true
+    }
 }
 
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.20'
-    implementation 'com.wireguard.android:tunnel:1.0.20211029'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 }
 
 cargo {
     module = "../server_rs"
     libname = "server_rs"
-    targets = ["arm64"]
+    targets = ["arm", "arm64"]
     pythonCommand = "python3"
     profile = "release"
 }
 
 tasks.whenTaskAdded { task ->
-    if ((task.name == 'javaPreCompileDebug' || task.name == 'javaPreCompileRelease')) {
+    if ((task.name == 'javaPreCompileRelease' || task.name == 'javaPreCompileDebug')) {
         task.dependsOn 'cargoBuild'
     }
 }
