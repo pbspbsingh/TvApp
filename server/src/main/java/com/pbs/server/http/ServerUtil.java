@@ -12,8 +12,7 @@ public class ServerUtil {
     System.out.println("Successfully loaded native libraries");
   }
 
-  private ServerUtil() {
-  }
+  private ServerUtil() {}
 
   private static native void startServer(String path);
 

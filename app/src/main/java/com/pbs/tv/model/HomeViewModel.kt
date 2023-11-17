@@ -77,7 +77,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
   companion object {
     private const val TAG = "HomeViewModel"
-    val BACKEND_MODE = BackendMode.LocalWithVpn // Use Remote for development
+    val BACKEND_MODE = BackendMode.Local // Use Remote for development
   }
 
   sealed interface HomeState {
@@ -87,8 +87,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
   }
 
   enum class BackendMode {
-    Remote, Local, LocalWithVpn;
+    Remote, Local;
 
-    fun isLocal() = this == Local || this == LocalWithVpn
+    fun isLocal() = this == Local
   }
 }

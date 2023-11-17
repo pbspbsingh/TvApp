@@ -47,12 +47,6 @@ object Http {
       }
 
       withContext(Dispatchers.IO) {
-        if (mode == HomeViewModel.BackendMode.LocalWithVpn) {
-          try {
-          } catch (e: Exception) {
-            Log.w(TAG, "VPN init failed ", e)
-          }
-        }
         if (mode.isLocal()) {
           initLocalServer(context)
         }

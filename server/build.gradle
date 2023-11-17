@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'com.pbs.server'
-    compileSdk 33
-    ndkPath '/Users/pbsingh/DevTools/Android/ndk/25.2.9519653'
+    compileSdk 34
+    ndkPath '/Users/pbsingh/DevTools/Android/sdk/ndk/26.1.10909125'
 
     defaultConfig {
         minSdk 28
-        targetSdk 33
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -33,12 +33,12 @@ android {
         jvmTarget = '11'
     }
     buildFeatures {
-        aidl true
+        aidl false
     }
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.20'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 }
